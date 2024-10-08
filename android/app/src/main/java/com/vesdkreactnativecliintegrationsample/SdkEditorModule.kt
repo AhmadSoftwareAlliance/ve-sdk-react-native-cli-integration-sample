@@ -9,6 +9,7 @@ import androidx.core.content.FileProvider
 import androidx.core.net.toUri
 import com.banuba.sdk.cameraui.data.PipConfig
 import com.banuba.sdk.core.data.TrackData
+import com.banuba.sdk.core.ext.getFilePath
 import com.banuba.sdk.export.data.ExportResult
 import com.banuba.sdk.export.utils.EXTRA_EXPORTED_SUCCESS
 import com.banuba.sdk.core.license.BanubaVideoEditor
@@ -64,6 +65,17 @@ class SdkEditorModule(reactContext: ReactApplicationContext) : ReactContextBaseJ
                         val videoUri = exportResult?.videoList?.firstOrNull()?.sourceUri
                         val previewUri = exportResult?.preview
 
+                        if (exportResult != null && exportResult.videoList.isEmpty()) {
+                            integrationModule?.release()
+                            integrationModule = null
+                            val photoIntent = PhotoCreationActivity.startFromEditor(
+                                activity?.applicationContext ?: return,
+                                imageUri = exportResult.preview
+                            )
+                            activity.startActivityForResult(photoIntent, OPEN_PHOTO_EDITOR_REQUEST_CODE)
+                            return
+                        }
+
                         if (videoUri == null) {
                             resultPromise?.reject("ERR_MISSING_EXPORT_RESULT", "")
                         } else {
@@ -81,14 +93,15 @@ class SdkEditorModule(reactContext: ReactApplicationContext) : ReactContextBaseJ
                             demoPlayExportedVideo(activity, videoUri)
                         }
                     }
-
                     resultCode == Activity.RESULT_CANCELED -> resultPromise?.reject("ERR_VIDEO_EXPORT_CANCEL", "")
                 }
                 resultPromise = null
             } else if (requestCode == OPEN_PHOTO_EDITOR_REQUEST_CODE) {
                 when {
                     resultCode == Activity.RESULT_OK -> {
-                        val photoUri = data?.getParcelableExtra(PhotoCreationActivity.EXTRA_EXPORTED) as? Uri
+                        val photoUri = activity?.let {
+                            (data?.getParcelableExtra(PhotoCreationActivity.EXTRA_EXPORTED) as? Uri)?.getFilePath(it)
+                        }
 
                         if (photoUri == null) {
                             resultPromise?.reject("ERR_MISSING_EXPORT_RESULT", "")
@@ -109,7 +122,6 @@ class SdkEditorModule(reactContext: ReactApplicationContext) : ReactContextBaseJ
 
         override fun onNewIntent(intent: Intent?) {}
     }
-
 
     init {
         reactApplicationContext.addActivityEventListener(videoEditorResultListener)

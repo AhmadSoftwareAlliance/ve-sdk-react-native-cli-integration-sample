@@ -55,7 +55,87 @@ export default class App extends Component {
 
   handleVideoExport(response) {
     console.log('Export completed successfully: video = ' + response?.videoUri + '; videoPreview = '
-        + response?.previewUri);
+        + response?.previewUri + '; photoUri = ' + response?.photoUri);
+  }
+
+  render() {
+    return (
+      <View style={styles.container}>
+        <Text style={{padding: 16, textAlign: 'center', fontSize: 18 }}>
+          Sample integration of Banuba Video and Photo Editor into React Native
+        </Text>
+
+        <Text
+          style={{
+            padding: 16,
+            textAlign: 'center',
+            color: '#ff0000',
+            fontSize: 16,
+            fontWeight: '800',
+          }}>
+          {this.state.errorText}
+        </Text>
+
+        <View style={{marginVertical: 8}}>
+            <Button
+               title="Open Photo Editor"
+               color="#00ab41"
+                onPress={async () => {
+                      if (Platform.OS === 'android') {
+                        openAndroidPhotoEditor()
+                          .then(response => {
+                            console.log('Exported photo = ' + response?.photoUri);
+                          })
+                          .catch(e => {
+                            this.handleSdkError(e);
+                          });
+                      } else {
+                        openIosPhotoEditor()
+                          .then(response => {
+                            console.log('Exported photo = ' + response?.photoUri);
+                          })
+                          .catch(e => {
+                            this.handleSdkError(e);
+                          });
+                      }
+                    }}
+                  />
+        </View>
+
+        <View style={{marginVertical: 8}}>
+          <Button
+            title="Open Video Editor - Default"
+            onPress={async () => {
+                openVideoEditor()
+                    .then(response => { this.handleVideoExport(response); })
+                    .catch(e => { this.handleSdkError(e); });
+            }}
+          />
+        </View>
+
+        <View style={{marginVertical: 8}}>
+          <Button
+            title="Open Video Editor - PIP"
+            onPress={async () => {
+                openVideoEditorPIP()
+                    .then(response => { this.handleVideoExport(response); })
+                    .catch(e => { this.handleSdkError(e); });
+            }}
+          />
+        </View>
+
+        <View style={{marginVertical: 8}}>
+          <Button
+            title="Open Video Editor - Trimmer"
+            onPress={async () => {
+                openVideoEditorTrimmer()
+                    .then(response => { this.handleVideoExport(response); })
+                    .catch(e => { this.handleSdkError(e); });
+            }}
+          />
+        </View>
+      </View>
+    );
   }
 
   handleSdkError(e) {

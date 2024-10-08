@@ -47,7 +47,7 @@ target 'vesdkreactnativecliintegrationsample' do
     pod 'VEPlaybackSDK', sdk_version
 
     # Photo Editor
-    pod 'BanubaPhotoEditorSDK', '1.2.3'
+    pod 'BanubaPhotoEditorSDK', '1.2.1'
 
   post_install do |installer|
     react_native_post_install(
